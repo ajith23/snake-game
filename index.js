@@ -52,6 +52,7 @@ function screenControlButtonClicked(direction) {
 
 function updateUserMove(e) {
     e = e || window.event;
+    var reactInstantly = true
     if (e.keyCode == '38') {
         nextDirection = DIRECTION.UP
     } else if (e.keyCode == '40') {
@@ -60,7 +61,10 @@ function updateUserMove(e) {
        nextDirection = DIRECTION.LEFT
     } else if (e.keyCode == '39') {
        nextDirection = DIRECTION.RIGHT
+    } else {
+      reactInstantly = false
     }
+    if (reactInstantly) updateSnakePosition()
 }
 
 const generateRandomPoint = (size) => {
