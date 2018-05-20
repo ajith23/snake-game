@@ -1,6 +1,6 @@
 body {
     font-family: 'Courier New', Courier, monospace;
-    
+    text-align: center
 }
 .board {
     display: inline-block;
@@ -54,4 +54,21 @@ body {
 
 .score-value {
     font-size: 2rem;
+}
+
+
+.start-button {
+    width: 200px;
+    height: 30px;
+    background: lightgreen;
+}
+
+.on-screen-control {
+    width: 100px;
+    height: 100px;
+    background: lightskyblue
+}
+
+.on-screen-controls-table {
+    margin: auto;
 }

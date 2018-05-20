@@ -31,6 +31,11 @@ const move = {
     DOWN: (point) =>  ({x: point.x + 1, y: point.y})
 }
 
+
+function screenControlButtonClicked(direction) {
+    nextDirection = direction
+}
+
 function updateUserMove(e) {
     e = e || window.event;
     if (e.keyCode == '38') {
