@@ -5,11 +5,12 @@ const DIRECTION = {
     DOWN: "DOWN"
 }
 var isSpeedConstant = false
+var isGhost = true // can go through walls
 var boardSize = {x: 20, y: 20}
 var snakeSpeed = 100
 var snakeStartSpeed = 300
 var freedCell, foodCell, latestBrickCell
-var currentDirection, nextDirection, snakeHead, snake, intervalId, timeoutIntervalId, currentSpeed
+var currentDirection, nextDirection, snakeHead, snake, intervalId, timeoutIntervalId, currentSpeed, currentMaxScore = 0
 
 const getBoardCellId = (point) => {
     if (!point) return null
@@ -34,24 +35,30 @@ const move = {
 
 function screenControlButtonClicked(direction) {
     nextDirection = direction
+    if (direction === 'UP-LEFT') {
+        if (currentDirection === DIRECTION.UP || currentDirection === DIRECTION.DOWN) {
+            nextDirection = DIRECTION.LEFT
+        } else {
+            nextDirection = DIRECTION.UP
+        }
+    } else {
+        if (currentDirection === DIRECTION.UP || currentDirection === DIRECTION.DOWN) {
+            nextDirection = DIRECTION.RIGHT
+        } else {
+            nextDirection = DIRECTION.DOWN
+        }
+    }
 }
 
 function updateUserMove(e) {
     e = e || window.event;
     if (e.keyCode == '38') {
-        console.log("up arrow")
         nextDirection = DIRECTION.UP
-    }
-    else if (e.keyCode == '40') {
-        console.log("down arrow")
+    } else if (e.keyCode == '40') {
         nextDirection = DIRECTION.DOWN
-    }
-    else if (e.keyCode == '37') {
-       console.log("left arrow")
+    } else if (e.keyCode == '37') {
        nextDirection = DIRECTION.LEFT
-    }
-    else if (e.keyCode == '39') {
-       console.log("right arrow")
+    } else if (e.keyCode == '39') {
        nextDirection = DIRECTION.RIGHT
     }
 }
@@ -115,17 +122,26 @@ function updateSnakePosition() {
     if (isMoveValid(currentDirection, nextDirection)) {
         newHead = move[nextDirection](snakeHead)
         currentDirection = nextDirection
-    }
-    else  {
+    } else  {
         newHead = move[currentDirection](snakeHead)
     }
+    
+    if (isGhost) {
+        // go through walls
+        if (newHead.x < 0) newHead.x = boardSize.x - 1
+        else if (newHead.x >= boardSize.x) newHead.x = 0
+        if (newHead.y < 0) newHead.y = boardSize.y - 1
+        else if (newHead.y >= boardSize.y) newHead.y = 0
+    }
+    
     snake.push(newHead)
     var foundFood =  isFood(newHead)
     freedCell = foundFood ? null : snake.shift()
     foodCell = foundFood ? generateNewFood() : foodCell
     latestBrickCell = foundFood ? generateNewBrick() : null
     snakeHead = newHead
-    console.log(snakeHead)
+    
+    currentMaxScore = Math.max(snake.length, currentMaxScore)
     updateUI()
 }
 
@@ -166,8 +182,7 @@ function updateUI() {
             var lastElement = document.getElementById(getBoardCellId(snake.shift()))
             lastElement.className = ""
             lastElement.classList.add("board-cell", "board-cell-vacant")
-        }
-        else {
+        } else {
             killSnake()
             return
         }
@@ -175,6 +190,8 @@ function updateUI() {
     
     document.getElementById("speed").innerHTML = currentSpeed
     document.getElementById("score").innerHTML = snake.length
+    document.getElementById("max-score").innerHTML = currentMaxScore
+
     snake.forEach(part => {
         var snakeElement = document.getElementById(getBoardCellId(part))
         snakeElement.className = ""
@@ -199,17 +216,20 @@ function initializeGameStartData() {
     modulo = 2
     accelerationFactor = 50
 
+    isGhost = document.getElementById('ghost').checked
+    isSpeedConstant = document.getElementById('constant-speed').checked
+    
     snake.push(snakeHead)
 }
 
 function startGameClicked() {
-    console.log("starting game")
     initializeGameStartData()
     initializeBoard(boardSize.x, boardSize.y)
     foodCell = generateNewFood()
-    if (isSpeedConstant)
-        intervalId = window.setInterval(updateSnakePosition, snakeSpeed);
-    else
+    if (isSpeedConstant) {
+        currentSpeed = snakeSpeed
+        intervalId = window.setInterval(updateSnakePosition, snakeSpeed)
+    } else
         setAcceleratingTimeout(updateSnakePosition, snakeStartSpeed)
 }
 
