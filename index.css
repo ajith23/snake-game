@@ -64,11 +64,16 @@ body {
 }
 
 .on-screen-control {
-    width: 180px;
-    height: 90px;
+    width: 15rem;
+    height: 10rem;
     background: lightskyblue
 }
 
 .on-screen-controls-table {
     margin: auto;
+    display: none;
 }
+
+.show-on-screen-control[type=checkbox]:checked~.on-screen-controls-table {
+    display: inline-block;
+  }
