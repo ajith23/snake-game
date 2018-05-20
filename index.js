@@ -48,6 +48,7 @@ function screenControlButtonClicked(direction) {
             nextDirection = DIRECTION.DOWN
         }
     }
+    reactInstantly = true
 }
 
 function updateUserMove(e) {
