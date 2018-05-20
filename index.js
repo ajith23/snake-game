@@ -9,7 +9,7 @@ var isGhost = true // can go through walls
 var boardSize = {x: 20, y: 20}
 var snakeSpeed = 100
 var snakeStartSpeed = 300
-var freedCell, foodCell, latestBrickCell
+var freedCell, foodCell, latestBrickCell, reactInstantly
 var currentDirection, nextDirection, snakeHead, snake, intervalId, timeoutIntervalId, currentSpeed, currentMaxScore = 0
 
 const getBoardCellId = (point) => {
@@ -52,7 +52,7 @@ function screenControlButtonClicked(direction) {
 
 function updateUserMove(e) {
     e = e || window.event;
-    var reactInstantly = true
+    reactInstantly = true
     if (e.keyCode == '38') {
         nextDirection = DIRECTION.UP
     } else if (e.keyCode == '40') {
@@ -75,7 +75,7 @@ const generateRandomPoint = (size) => {
 }
 
 function generateNewFood() {
-    var x = Math.floor(Math.random() * boardSize.x);  
+    var x = Math.floor(Math.random() * boardSize.x);
     var y = Math.floor(Math.random() * boardSize.y);
     var randomPoint = generateRandomPoint(boardSize)
     while (snake.filter(part => part.x == randomPoint.x && part.y == randomPoint.y).length) {
@@ -92,7 +92,7 @@ function generateNewBrick() {
     while (foodCell.x == randomPoint.x && foodCell.y == randomPoint.y) {
         randomPoint = generateRandomPoint(boardSize)
     }
-    
+
     return randomPoint
 }
 
@@ -109,7 +109,7 @@ function initializeBoard(x, y) {
             boardCell.classList.add("board-cell")
             boardCell.classList.add("board-cell-vacant")
             boardCell.setAttribute("id", getBoardCellId(point));
-            
+
             boardRow.appendChild(boardCell)
         }
         boardTable.appendChild(boardRow)
@@ -129,7 +129,7 @@ function updateSnakePosition() {
     } else  {
         newHead = move[currentDirection](snakeHead)
     }
-    
+
     if (isGhost) {
         // go through walls
         if (newHead.x < 0) newHead.x = boardSize.x - 1
@@ -137,14 +137,14 @@ function updateSnakePosition() {
         if (newHead.y < 0) newHead.y = boardSize.y - 1
         else if (newHead.y >= boardSize.y) newHead.y = 0
     }
-    
+
     snake.push(newHead)
     var foundFood =  isFood(newHead)
     freedCell = foundFood ? null : snake.shift()
     foodCell = foundFood ? generateNewFood() : foodCell
     latestBrickCell = foundFood ? generateNewBrick() : null
     snakeHead = newHead
-    
+
     currentMaxScore = Math.max(snake.length, currentMaxScore)
     updateUI()
 }
@@ -162,23 +162,23 @@ function updateUI() {
         foodElement.className = ""
         foodElement.classList.add("board-cell", "board-cell-with-food")
     }
-    
+
     //update brick cell
     var latestBrickCellElement = document.getElementById(getBoardCellId(latestBrickCell))
     if (latestBrickCellElement) {
         latestBrickCellElement.className = ""
         latestBrickCellElement.classList.add("board-cell", "board-cell-with-brick")
     }
-    
+
     // update snake head style
     var snakeHeadElement = document.getElementById(getBoardCellId(snakeHead))
-    if (!snakeHeadElement 
+    if (!snakeHeadElement
         || snakeHeadElement.classList.contains("board-cell-occupied")) {
         killSnake()
         return
     }
-    
-    // reduce snake size on collison with brick 
+
+    // reduce snake size on collison with brick
     if (snakeHeadElement.classList.contains("board-cell-with-brick")) {
         if (snake.length > 1) {
             snakeHeadElement.className = ""
@@ -191,7 +191,7 @@ function updateUI() {
             return
         }
     }
-    
+
     document.getElementById("speed").innerHTML = currentSpeed
     document.getElementById("score").innerHTML = snake.length
     document.getElementById("max-score").innerHTML = currentMaxScore
@@ -202,7 +202,7 @@ function updateUI() {
         snakeElement.classList.add("board-cell", "board-cell-occupied")
     });
     snakeHeadElement.classList.add(`snake-head-moving-${currentDirection}`)
-    
+
     var freedElement = document.getElementById(getBoardCellId(freedCell))
     if (freedElement) {
         freedElement.className = ""
@@ -222,7 +222,7 @@ function initializeGameStartData() {
 
     isGhost = document.getElementById('ghost').checked
     isSpeedConstant = document.getElementById('constant-speed').checked
-    
+
     snake.push(snakeHead)
 }
 
@@ -250,9 +250,12 @@ function setAcceleratingTimeout(callback, startSpeed)
                     accelerationFactor = 10
                 }
             }
-            currentSpeed = Math.max(startSpeed - counter, 50)
+            currentSpeed = Math.max(startSpeed - counter, 100)
             timeoutIntervalId = window.setTimeout(internalCallback, currentSpeed);
-            callback();
+            if (!reactInstantly) {
+              callback();
+            }
+            reactInstantly = false
         }
     }(0);
 
